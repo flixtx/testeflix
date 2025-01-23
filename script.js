@@ -20,9 +20,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(data => {
                     catalogo.innerHTML = ''; // Limpa o catálogo anterior
                     data.results.forEach(item => {
-                        const catalogoItem = document.createElement('div');
-                        catalogoItem.classList.add('item');
-
+                    if (item.media_type === 'movie' || item.media_type === 'tv') {
+                        const catalogoItem = document.createElement('div'); 
+                        catalogoItem.classList.add('item'); 
                         // Extrai o ano do filme ou série
                         const year = item.release_date
                             ? new Date(item.release_date).getFullYear()
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             catalogoItem.addEventListener('click', function () {
                                 playContent(item.id, 'movie');
                             });
-                        } else if (item.media_type === 'tv') {
+                        } else if (item.media_type === 'tv') {                           
                             catalogoItem.innerHTML = `
                                 <h3>Série: ${item.name} (${year})</h3>
                                 <img src="https://image.tmdb.org/t/p/w200${item.poster_path}" alt="${item.name}">
@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
 
                         catalogo.appendChild(catalogoItem);
+                    }
                     });
                 });
         }
@@ -167,8 +168,9 @@ function playEpisode(tv_id, season_number, episode_number) {
 // Função auxiliar para buscar o magnet link no data.json
 function findMagnetLink(imdbId, season, episode) {
     if (season && episode) {
-        //const url = `https://94c8cb9f702d-brazuca-torrents.baby-beamup.club/stream/series/${imdbId}:${season}:${episode}.json`;
+       // const url = `https://94c8cb9f702d-brazuca-torrents.baby-beamup.club/stream/series/${imdbId}:${season}:${episode}.json`;
         const url = `https://torrentio.strem.fun/providers=comando,bludv%7Csort=qualitysize%7Clanguage=portuguese%7Cqualityfilter=threed,4k,480p/stream/series/${imdbId}:${season}:${episode}.json`;
+        //const url = `https://torrentio.strem.fun/providers=rarbg|qualityfilter=threed,4k,480p,unknown|limit=3/stream/series/${imdbId}:${season}:${episode}.json`;
         console.log(url);
         return fetch(url)
         .then(response => response.json()) // Converte a resposta para JSON
@@ -188,6 +190,7 @@ function findMagnetLink(imdbId, season, episode) {
     } else {
         //const url = `https://94c8cb9f702d-brazuca-torrents.baby-beamup.club/stream/movie/${imdbId}.json`;
         const url = `https://torrentio.strem.fun/providers=comando,bludv%7Csort=qualitysize%7Clanguage=portuguese%7Cqualityfilter=threed,4k,480p/stream/movie/${imdbId}.json`;
+        //const url = `https://torrentio.strem.fun/providers=rarbg|qualityfilter=threed,4k,480p,unknown|limit=3/stream/movie/${imdbId}.json`;
         console.log(url);
         return fetch(url)
         .then(response => response.json()) // Converte a resposta para JSON
@@ -205,3 +208,4 @@ function findMagnetLink(imdbId, season, episode) {
         });         
     }
 }
+
