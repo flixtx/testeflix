@@ -3,33 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo de Filmes, Séries e Animes</title>
+    <title>WEBFLIX</title>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <style>
+        /* Estilo Geral */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
+            padding: 0;
+            background-color: #141414; /* Fundo escuro estilo Netflix */
+            color: #ffffff; /* Texto branco */
         }
+
+        h1 {
+            text-align: center;
+            color: #ffffff;
+            margin-top: 20px;
+        }
+
+        /* Centralizar a Caixa de Busca */
+        .search-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+
         input {
-            width: 300px;
-            padding: 10px;
+            width: 50%;
+            padding: 15px;
+            font-size: 16px;
+            border: none;
+            border-radius: 25px;
+            outline: none;
+            background-color: #333;
+            color: #fff;
+        }
+
+        input::placeholder {
+            color: #bbb;
+        }
+
+        /* Estilo do Catálogo */
+        .catalogo {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .catalogo button {
+            background-color: #e50914; /* Vermelho estilo Netflix */
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }        
+
+        .item {
+            background-color: #222;
+            border-radius: 10px;
+            overflow: hidden;
+            text-align: center;
+            padding: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .item:hover {
+            transform: scale(1.05);
+        }
+
+        .item img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+
+        .item h3 {
+            font-size: 18px;
+            color: #fff;
             margin: 10px 0;
         }
-        .catalogo {
-            display: flex;
-            flex-wrap: wrap;
+
+        .item button {
+            background-color: #e50914; /* Vermelho estilo Netflix */
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
         }
+
+        .item button:hover {
+            background-color: #f40612;
+        }
+
         .item {
-            background-color: white;
-            border: 1px solid #ddd;
-            margin: 5px;
-            padding: 10px;
-            width: 200px;
-            text-align: center;
-        }
-    
+            cursor: pointer;
+        }        
+
         /* Modal Styles */
         #playerModal {
             display: none;
@@ -43,6 +119,7 @@
             align-items: center;
             z-index: 1000;
         }
+
         #playerContainer {
             position: relative;
             width: 80%;
@@ -53,6 +130,7 @@
             border-radius: 10px;
             overflow: hidden;
         }
+
         #closeButton {
             position: absolute;
             top: 10px;
@@ -64,14 +142,16 @@
             cursor: pointer;
             font-size: 16px;
         }
+
         #closeButton:hover {
             background-color: #c00;
         }
+
         #player {
             width: 100%;
             height: 100%;
         }
-    
+
         /* Media Queries para responsividade */
         @media (max-width: 768px) {
             #playerContainer {
@@ -80,10 +160,10 @@
                 max-height: 400px;
             }
             #player {
-                height: 100%; /* Ajusta o player para ocupar 100% da altura disponível */
+                height: 100%;
             }
         }
-    
+
         @media (max-width: 480px) {
             #playerContainer {
                 width: 95%;
@@ -91,15 +171,16 @@
                 max-height: 300px;
             }
             #player {
-                height: 100%; /* Ajusta o player para ocupar 100% da altura disponível */
+                height: 100%;
             }
         }
     </style>
-    
 </head>
 <body>
-    <h1>Catálogo de Filmes, Séries e Animes</h1>
-    <input type="text" id="searchInput" placeholder="Pesquise por títulos">
+    <h1>WEBFLIX</h1>
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Pesquise por filmes, séries ou animes">
+    </div>
     <div class="catalogo" id="catalogo"></div>
 
     <!-- Modal para o player -->
