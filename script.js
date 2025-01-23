@@ -23,18 +23,33 @@ document.addEventListener('DOMContentLoaded', function () {
                         const catalogoItem = document.createElement('div');
                         catalogoItem.classList.add('item');
 
+                        // Extrai o ano do filme ou série
+                        const year = item.release_date
+                            ? new Date(item.release_date).getFullYear()
+                            : item.first_air_date
+                            ? new Date(item.first_air_date).getFullYear()
+                            : 'Desconhecido';
+
                         if (item.media_type === 'movie') {
                             catalogoItem.innerHTML = `
-                                <h3>Filme: ${item.title}</h3>
+                                <h3>Filme: ${item.title} (${year})</h3>
                                 <img src="https://image.tmdb.org/t/p/w200${item.poster_path}" alt="${item.title}">
-                                <button onclick="playContent('${item.id}', 'movie')">Assistir Filme</button>
+                                <button class="playButton">Assistir Filme</button>
                             `;
+                            // Adiciona evento de clique na caixa
+                            catalogoItem.addEventListener('click', function () {
+                                playContent(item.id, 'movie');
+                            });
                         } else if (item.media_type === 'tv') {
                             catalogoItem.innerHTML = `
-                                <h3>Série: ${item.name}</h3>
+                                <h3>Série: ${item.name} (${year})</h3>
                                 <img src="https://image.tmdb.org/t/p/w200${item.poster_path}" alt="${item.name}">
-                                <button onclick="showSeasons('${item.id}')">Ver Temporadas e Episódios</button>
+                                <button class="playButton">Ver Temporadas e Episódios</button>
                             `;
+                            // Adiciona evento de clique na caixa
+                            catalogoItem.addEventListener('click', function () {
+                                showSeasons(item.id);
+                            });
                         }
 
                         catalogo.appendChild(catalogoItem);
@@ -46,24 +61,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Função para reproduzir um filme
 function playContent(tmdb_id, type) {
-    // Busca os detalhes do filme no TMDB para obter o IMDb ID
     const api_key = decodeApiKey();
     var url = `https://api.themoviedb.org/3/${type}/${tmdb_id}?api_key=${api_key}&language=pt-BR&append_to_response=external_ids`;
-    //console.log(url);
     fetch(url)
         .then(response => response.json())
         .then(data => {
-            const imdb_id = data.imdb_id; // Obtém o IMDb ID do filme
+            const imdb_id = data.imdb_id;
             if (!imdb_id) {
                 alert('IMDb ID não encontrado para este conteúdo.');
                 return;
             }
 
-            // Busca o magnet link no data.json usando o IMDb ID
             findMagnetLink(imdb_id)
                 .then(magnet => {
                     if (magnet) {
-                        openModalWithPlayer(magnet); // Abre o modal com o player
+                        openModalWithPlayer(magnet);
                     } else {
                         alert('Magnet link não encontrado no data.json.');
                     }
@@ -127,23 +139,20 @@ function showEpisodes(tv_id, season_number) {
 // Função para reproduzir um episódio
 function playEpisode(tv_id, season_number, episode_number) {
     const api_key = decodeApiKey();
-    // Busca os detalhes da série no TMDB para obter o IMDb ID
     var url = `https://api.themoviedb.org/3/tv/${tv_id}?api_key=${api_key}&language=pt-BR&append_to_response=external_ids`;
-    //console.log(url);
     fetch(url)
         .then(response => response.json())
         .then(data => {
-            const imdb_id = data.external_ids?.imdb_id; // Obtém o IMDb ID da série
+            const imdb_id = data.external_ids?.imdb_id;
             if (!imdb_id) {
                 alert('IMDb ID não encontrado para esta série.');
                 return;
             }
 
-            // Busca o magnet link no data.json usando o IMDb ID, temporada e episódio
             findMagnetLink(imdb_id, season_number, episode_number)
                 .then(magnet => {
                     if (magnet) {
-                        openModalWithPlayer(magnet); // Abre o modal com o player
+                        openModalWithPlayer(magnet);
                     } else {
                         alert('Magnet link não encontrado no data.json.');
                     }
@@ -196,4 +205,3 @@ function findMagnetLink(imdbId, season, episode) {
         });         
     }
 }
-
