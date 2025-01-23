@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Filmes, Séries e Animes</title>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        input {
+            width: 300px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .catalogo {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .item {
+            background-color: white;
+            border: 1px solid #ddd;
+            margin: 5px;
+            padding: 10px;
+            width: 200px;
+            text-align: center;
+        }
+
+        /* Modal Styles */
+        #playerModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        #playerContainer {
+            position: relative;
+            width: 80%;
+            max-width: 800px;
+            max-height: 600px;
+            background-color: #000;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        #closeButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #f00;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #closeButton:hover {
+            background-color: #c00;
+        }
+        #player {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Catálogo de Filmes, Séries e Animes</h1>
+    <input type="text" id="searchInput" placeholder="Pesquise por títulos">
+    <div class="catalogo" id="catalogo"></div>
+
+    <!-- Modal para o player -->
+    <div id="playerModal">
+        <div id="playerContainer">
+            <button id="closeButton">Fechar</button>
+            <div id="player"></div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@webtor/embed-sdk-js/dist/index.min.js"></script>
+    <script>
+        // Abre o modal do player com o link magnético
+        function openModalWithPlayer(magnetLink) {
+            const modal = document.getElementById('playerModal');
+            const playerDiv = document.getElementById('player');
+
+            // Limpa o player anterior
+            playerDiv.innerHTML = '';
+
+            // Inicializa o player do Webtor
+            window.webtor = window.webtor || [];
+            window.webtor.push({
+                id: 'player',
+                magnet: magnetLink,
+                on: function(e) {
+                    if (e.name == window.webtor.TORRENT_FETCHED) {
+                        console.log('Torrent fetched!', e.data);
+                    }
+                    if (e.name == window.webtor.TORRENT_ERROR) {
+                        console.log('Torrent error!');
+                    }
+                },
+                poster: 'https://wallpapers.com/images/hd/overlapping-fine-neon-green-matrix-dvfxd08moa4d5hy8.jpg',
+                title: 'Reprodução de Torrent'
+            });
+
+            // Mostra o modal
+            modal.style.display = 'flex';
+        }
+
+        // Fecha o modal
+        function closeModal() {
+            const modal = document.getElementById('playerModal');
+            const playerDiv = document.getElementById('player');
+
+            // Esconde o modal e limpa o player
+            modal.style.display = 'none';
+            playerDiv.innerHTML = '';
+        }
+
+        // Fecha o modal ao pressionar a tecla ESC
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Adiciona o evento de clique no botão de fechar
+        document.getElementById('closeButton').addEventListener('click', closeModal);
+    </script>
+
+    <script src="script.js"></script>
+</body>
+</html>
