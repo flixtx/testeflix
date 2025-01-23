@@ -158,12 +158,18 @@ function playEpisode(tv_id, season_number, episode_number) {
 // Função auxiliar para buscar o magnet link no data.json
 function findMagnetLink(imdbId, season, episode) {
     if (season && episode) {
-        const url = `https://94c8cb9f702d-brazuca-torrents.baby-beamup.club/stream/series/${imdbId}:${season}:${episode}.json`;
+        //const url = `https://94c8cb9f702d-brazuca-torrents.baby-beamup.club/stream/series/${imdbId}:${season}:${episode}.json`;
+        const url = `https://torrentio.strem.fun/providers=comando,bludv%7Csort=qualitysize%7Clanguage=portuguese%7Cqualityfilter=threed,4k,480p/stream/series/${imdbId}:${season}:${episode}.json`;
         console.log(url);
         return fetch(url)
         .then(response => response.json()) // Converte a resposta para JSON
         .then(data => {
-            return 'magnet:?xt=urn:btih:' + data.streams[data.streams.length - 1].infoHash; // Corrigido: concatenando a string corretamente
+           // return 'magnet:?xt=urn:btih:' + data.streams[data.streams.length - 1].infoHash; // Corrigido: concatenando a string corretamente
+           try {
+                return 'magnet:?xt=urn:btih:' + data.streams[0].infoHash; // Corrigido: concatenando a string corretamente
+            } catch (error) {
+                return 'magnet:?xt=urn:btih:' + data.streams[data.streams.length - 1].infoHash; // Corrigido: concatenando a string corretamente
+            }           
         })
         .catch(error => {
           console.error('Erro:', error);
@@ -171,12 +177,18 @@ function findMagnetLink(imdbId, season, episode) {
         });        
 
     } else {
-        const url = `https://94c8cb9f702d-brazuca-torrents.baby-beamup.club/stream/movie/${imdbId}.json`;
+        //const url = `https://94c8cb9f702d-brazuca-torrents.baby-beamup.club/stream/movie/${imdbId}.json`;
+        const url = `https://torrentio.strem.fun/providers=comando,bludv%7Csort=qualitysize%7Clanguage=portuguese%7Cqualityfilter=threed,4k,480p/stream/movie/${imdbId}.json`;
         console.log(url);
         return fetch(url)
         .then(response => response.json()) // Converte a resposta para JSON
         .then(data => {
-            return 'magnet:?xt=urn:btih:' + data.streams[data.streams.length - 1].infoHash; // Corrigido: concatenando a string corretamente
+            //return 'magnet:?xt=urn:btih:' + data.streams[data.streams.length - 1].infoHash; // Corrigido: concatenando a string corretamente
+            try {
+                return 'magnet:?xt=urn:btih:' + data.streams[0].infoHash; // Corrigido: concatenando a string corretamente
+            } catch (error) {
+                return 'magnet:?xt=urn:btih:' + data.streams[data.streams.length - 1].infoHash; // Corrigido: concatenando a string corretamente
+            }
         })
         .catch(error => {
           console.error('Erro:', error);
