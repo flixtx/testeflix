@@ -29,7 +29,7 @@
             width: 200px;
             text-align: center;
         }
-
+    
         /* Modal Styles */
         #playerModal {
             display: none;
@@ -51,6 +51,7 @@
             background-color: #000;
             padding: 10px;
             border-radius: 10px;
+            overflow: hidden;
         }
         #closeButton {
             position: absolute;
@@ -70,7 +71,31 @@
             width: 100%;
             height: 100%;
         }
+    
+        /* Media Queries para responsividade */
+        @media (max-width: 768px) {
+            #playerContainer {
+                width: 90%;
+                max-width: 100%;
+                max-height: 400px;
+            }
+            #player {
+                height: 100%; /* Ajusta o player para ocupar 100% da altura disponível */
+            }
+        }
+    
+        @media (max-width: 480px) {
+            #playerContainer {
+                width: 95%;
+                max-width: 100%;
+                max-height: 300px;
+            }
+            #player {
+                height: 100%; /* Ajusta o player para ocupar 100% da altura disponível */
+            }
+        }
     </style>
+    
 </head>
 <body>
     <h1>Catálogo de Filmes, Séries e Animes</h1>
