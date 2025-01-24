@@ -189,8 +189,9 @@ function findMagnetLink(imdbId, season, episode) {
 
     } else {
         //const url = `https://94c8cb9f702d-brazuca-torrents.baby-beamup.club/stream/movie/${imdbId}.json`;
-        const url = `https://torrentio.strem.fun/providers=comando,bludv%7Csort=qualitysize%7Clanguage=portuguese%7Cqualityfilter=threed,4k,480p/stream/movie/${imdbId}.json`;
+        //const url = `https://torrentio.strem.fun/providers=comando,bludv%7Csort=qualitysize%7Clanguage=portuguese%7Cqualityfilter=threed,4k,480p/stream/movie/${imdbId}.json`;
         //const url = `https://torrentio.strem.fun/providers=rarbg|qualityfilter=threed,4k,480p,unknown|limit=3/stream/movie/${imdbId}.json`;
+        const url = `https://oneplay.alwaysdata.net/stream/movie/${imdbId}.json`;
         console.log(url);
         return fetch(url)
         .then(response => response.json()) // Converte a resposta para JSON
