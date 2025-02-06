@@ -5,60 +5,36 @@ function decodeApiKey() {
     return atob(encodedApiKey); // Decodifica a chave Base64
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    const searchInput = document.getElementById('searchInput');
-    const catalogo = document.getElementById('catalogo');
+// Função para buscar links magnéticos no TorrentGalaxy
+async function findMagnetLinkOnTorrentGalaxy(query) {
+    const searchUrl = `https://torrentgalaxy.to/torrents.php?search=${encodeURIComponent(query)}`;
+    try {
+        const response = await fetch(searchUrl);
+        const html = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
 
-    // Evento para buscar filmes/séries ao digitar na barra de pesquisa
-    searchInput.addEventListener('input', function () {
-        const query = searchInput.value;
-        if (query.length > 2) {
-            // Faz a busca na API do TMDB
-            const api_key = decodeApiKey();
-            fetch(`https://api.themoviedb.org/3/search/multi?api_key=${api_key}&language=pt-BR&query=${query}`)
-                .then(response => response.json())
-                .then(data => {
-                    catalogo.innerHTML = ''; // Limpa o catálogo anterior
-                    data.results.forEach(item => {
-                    if (item.media_type === 'movie' || item.media_type === 'tv') {
-                        const catalogoItem = document.createElement('div'); 
-                        catalogoItem.classList.add('item'); 
-                        // Extrai o ano do filme ou série
-                        const year = item.release_date
-                            ? new Date(item.release_date).getFullYear()
-                            : item.first_air_date
-                            ? new Date(item.first_air_date).getFullYear()
-                            : 'Desconhecido';
+        // Encontra o primeiro link magnético na página de resultados
+        const magnetLink = doc.querySelector('a[href^="magnet:?"]')?.href;
+        return magnetLink || null;
+    } catch (error) {
+        console.error('Erro ao buscar no TorrentGalaxy:', error);
+        return null;
+    }
+}
 
-                        if (item.media_type === 'movie') {
-                            catalogoItem.innerHTML = `
-                                <h3>Filme: ${item.title} (${year})</h3>
-                                <img src="https://image.tmdb.org/t/p/w200${item.poster_path}" alt="${item.title}">
-                                <button class="playButton">Assistir Filme</button>
-                            `;
-                            // Adiciona evento de clique na caixa
-                            catalogoItem.addEventListener('click', function () {
-                                playContent(item.id, 'movie');
-                            });
-                        } else if (item.media_type === 'tv') {                           
-                            catalogoItem.innerHTML = `
-                                <h3>Série: ${item.name} (${year})</h3>
-                                <img src="https://image.tmdb.org/t/p/w200${item.poster_path}" alt="${item.name}">
-                                <button class="playButton">Ver Temporadas e Episódios</button>
-                            `;
-                            // Adiciona evento de clique na caixa
-                            catalogoItem.addEventListener('click', function () {
-                                showSeasons(item.id);
-                            });
-                        }
-
-                        catalogo.appendChild(catalogoItem);
-                    }
-                    });
-                });
-        }
-    });
-});
+// Função para buscar o link magnético
+function findMagnetLink(imdbId, season, episode) {
+    if (season && episode) {
+        // Para séries, use o nome da série, temporada e episódio na busca
+        const query = `Série ${imdbId} Temporada ${season} Episódio ${episode}`;
+        return findMagnetLinkOnTorrentGalaxy(query);
+    } else {
+        // Para filmes, use o nome do filme
+        const query = `Filme ${imdbId}`;
+        return findMagnetLinkOnTorrentGalaxy(query);
+    }
+}
 
 // Função para reproduzir um filme
 function playContent(tmdb_id, type) {
@@ -78,62 +54,13 @@ function playContent(tmdb_id, type) {
                     if (magnet) {
                         openModalWithPlayer(magnet);
                     } else {
-                        alert('Magnet link não encontrado no data.json.');
+                        alert('Magnet link não encontrado no TorrentGalaxy.');
                     }
                 });
         })
         .catch(error => {
             console.error('Erro ao buscar detalhes no TMDB:', error);
             alert('Erro ao buscar o conteúdo. Tente novamente.');
-        });
-}
-
-// Função para mostrar as temporadas de uma série
-function showSeasons(tv_id) {
-    const api_key = decodeApiKey();
-    fetch(`https://api.themoviedb.org/3/tv/${tv_id}?api_key=${api_key}&language=pt-BR`)
-        .then(response => response.json())
-        .then(data => {
-            const seasons = data.seasons;
-            const catalogo = document.getElementById('catalogo');
-            catalogo.innerHTML = '';
-            seasons.forEach(season => {
-                const seasonItem = document.createElement('div');
-                seasonItem.classList.add('item');
-                seasonItem.innerHTML = `
-                    <h3>Temporada ${season.season_number}</h3>
-                    <button onclick="showEpisodes('${tv_id}', '${season.season_number}')">Ver Episódios</button>
-                `;
-                catalogo.appendChild(seasonItem);
-            });
-            catalogo.innerHTML += `<button onclick="searchInput.dispatchEvent(new Event('input'))">Voltar para a Busca</button>`;
-        });
-}
-
-// Função para mostrar os episódios de uma temporada
-function showEpisodes(tv_id, season_number) {
-    const api_key = decodeApiKey();
-    fetch(`https://api.themoviedb.org/3/tv/${tv_id}/season/${season_number}?api_key=${api_key}&language=pt-BR`)
-        .then(response => response.json())
-        .then(data => {
-            const episodes = data.episodes;
-            const catalogo = document.getElementById('catalogo');
-            catalogo.innerHTML = '';
-            const backButton = document.createElement('button');
-            backButton.innerText = 'Voltar para Temporadas';
-            backButton.onclick = function () {
-                showSeasons(tv_id);
-            }
-            catalogo.appendChild(backButton);
-            episodes.forEach(episode => {
-                const episodeItem = document.createElement('div');
-                episodeItem.classList.add('item');
-                episodeItem.innerHTML = `
-                    <h3>Episódio ${episode.episode_number}: ${episode.name}</h3>
-                    <button onclick="playEpisode('${tv_id}', '${season_number}', '${episode.episode_number}')">Assistir Episódio</button>
-                `;
-                catalogo.appendChild(episodeItem);
-            });
         });
 }
 
@@ -155,7 +82,7 @@ function playEpisode(tv_id, season_number, episode_number) {
                     if (magnet) {
                         openModalWithPlayer(magnet);
                     } else {
-                        alert('Magnet link não encontrado no data.json.');
+                        alert('Magnet link não encontrado no TorrentGalaxy.');
                     }
                 });
         })
@@ -165,48 +92,51 @@ function playEpisode(tv_id, season_number, episode_number) {
         });
 }
 
-// Função auxiliar para buscar o magnet link no data.json
-function findMagnetLink(imdbId, season, episode) {
-    if (season && episode) {
-       // const url = `https://94c8cb9f702d-brazuca-torrents.baby-beamup.club/stream/series/${imdbId}:${season}:${episode}.json`;
-        const url = `https://torrentio.strem.fun/providers=comando,bludv%7Csort=qualitysize%7Clanguage=portuguese%7Cqualityfilter=threed,4k,480p/stream/series/${imdbId}:${season}:${episode}.json`;
-        //const url = `https://torrentio.strem.fun/providers=rarbg|qualityfilter=threed,4k,480p,unknown|limit=3/stream/series/${imdbId}:${season}:${episode}.json`;
-        console.log(url);
-        return fetch(url)
-        .then(response => response.json()) // Converte a resposta para JSON
-        .then(data => {
-           // return 'magnet:?xt=urn:btih:' + data.streams[data.streams.length - 1].infoHash; // Corrigido: concatenando a string corretamente
-           try {
-                return 'magnet:?xt=urn:btih:' + data.streams[0].infoHash; // Corrigido: concatenando a string corretamente
-            } catch (error) {
-                return 'magnet:?xt=urn:btih:' + data.streams[data.streams.length - 1].infoHash; // Corrigido: concatenando a string corretamente
-            }           
-        })
-        .catch(error => {
-          console.error('Erro:', error);
-          return null; // Caso haja erro, retorna null
-        });        
+// Função para abrir o modal com o player
+function openModalWithPlayer(magnetLink) {
+    const modal = document.getElementById('playerModal');
+    const playerDiv = document.getElementById('player');
 
-    } else {
-        //const url = `https://94c8cb9f702d-brazuca-torrents.baby-beamup.club/stream/movie/${imdbId}.json`;
-        //const url = `https://torrentio.strem.fun/providers=comando,bludv%7Csort=qualitysize%7Clanguage=portuguese%7Cqualityfilter=threed,4k,480p/stream/movie/${imdbId}.json`;
-        //const url = `https://torrentio.strem.fun/providers=rarbg|qualityfilter=threed,4k,480p,unknown|limit=3/stream/movie/${imdbId}.json`;
-        const url = `https://oneplay.alwaysdata.net/stream/movie/${imdbId}.json`;
-        console.log(url);
-        return fetch(url)
-        .then(response => response.json()) // Converte a resposta para JSON
-        .then(data => {
-            //return 'magnet:?xt=urn:btih:' + data.streams[data.streams.length - 1].infoHash; // Corrigido: concatenando a string corretamente
-            try {
-                return 'magnet:?xt=urn:btih:' + data.streams[0].infoHash; // Corrigido: concatenando a string corretamente
-            } catch (error) {
-                return 'magnet:?xt=urn:btih:' + data.streams[data.streams.length - 1].infoHash; // Corrigido: concatenando a string corretamente
+    // Limpa o player anterior
+    playerDiv.innerHTML = '';
+
+    // Inicializa o player do Webtor
+    window.webtor = window.webtor || [];
+    window.webtor.push({
+        id: 'player',
+        magnet: magnetLink,
+        on: function(e) {
+            if (e.name == window.webtor.TORRENT_FETCHED) {
+                console.log('Torrent fetched!', e.data);
             }
-        })
-        .catch(error => {
-          console.error('Erro:', error);
-          return null; // Caso haja erro, retorna null
-        });         
-    }
+            if (e.name == window.webtor.TORRENT_ERROR) {
+                console.log('Torrent error!');
+            }
+        },
+        poster: 'https://wallpapers.com/images/hd/overlapping-fine-neon-green-matrix-dvfxd08moa4d5hy8.jpg',
+        title: 'Reprodução de Torrent'
+    });
+
+    // Mostra o modal
+    modal.style.display = 'flex';
 }
 
+// Função para fechar o modal
+function closeModal() {
+    const modal = document.getElementById('playerModal');
+    const playerDiv = document.getElementById('player');
+
+    // Esconde o modal e limpa o player
+    modal.style.display = 'none';
+    playerDiv.innerHTML = '';
+}
+
+// Fecha o modal ao pressionar a tecla ESC
+window.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeModal();
+    }
+});
+
+// Adiciona o evento de clique no botão de fechar
+document.getElementById('closeButton').addEventListener('click', closeModal);
