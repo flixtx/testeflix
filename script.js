@@ -80,6 +80,10 @@ function playContent(tmdb_id, type) {
                     } else {
                         alert('Magnet link não encontrado no data.json.');
                     }
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert('Erro ao selecionar o torrent.');
                 });
         })
         .catch(error => {
@@ -157,6 +161,10 @@ function playEpisode(tv_id, season_number, episode_number) {
                     } else {
                         alert('Magnet link não encontrado no data.json.');
                     }
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert('Erro ao selecionar o torrent.');
                 });
         })
         .catch(error => {
@@ -167,46 +175,112 @@ function playEpisode(tv_id, season_number, episode_number) {
 
 // Função auxiliar para buscar o magnet link no data.json
 function findMagnetLink(imdbId, season, episode) {
-    if (season && episode) {
-       // const url = `https://94c8cb9f702d-brazuca-torrents.baby-beamup.club/stream/series/${imdbId}:${season}:${episode}.json`;
-        const url = `https://torrentio.strem.fun/providers=comando,bludv%7Csort=qualitysize%7Clanguage=portuguese%7Cqualityfilter=threed,4k,480p/stream/series/${imdbId}:${season}:${episode}.json`;
-        //const url = `https://torrentio.strem.fun/providers=rarbg|qualityfilter=threed,4k,480p,unknown|limit=3/stream/series/${imdbId}:${season}:${episode}.json`;
-        console.log(url);
-        return fetch(url)
-        .then(response => response.json()) // Converte a resposta para JSON
-        .then(data => {
-           // return 'magnet:?xt=urn:btih:' + data.streams[data.streams.length - 1].infoHash; // Corrigido: concatenando a string corretamente
-           try {
-                return 'magnet:?xt=urn:btih:' + data.streams[0].infoHash; // Corrigido: concatenando a string corretamente
-            } catch (error) {
-                return 'magnet:?xt=urn:btih:' + data.streams[data.streams.length - 1].infoHash; // Corrigido: concatenando a string corretamente
-            }           
-        })
-        .catch(error => {
-          console.error('Erro:', error);
-          return null; // Caso haja erro, retorna null
-        });        
+    const isSeries = season && episode;
+    const url = isSeries
+        ? `https://torrentio.strem.fun/providers=comando,bludv/stream/series/${imdbId}:${season}:${episode}.json`
+        : `https://torrentio.strem.fun/providers=comando,bludv/stream/movie/${imdbId}.json`;
 
-    } else {
-        //const url = `https://94c8cb9f702d-brazuca-torrents.baby-beamup.club/stream/movie/${imdbId}.json`;
-        //const url = `https://torrentio.strem.fun/providers=comando,bludv%7Csort=qualitysize%7Clanguage=portuguese%7Cqualityfilter=threed,4k,480p/stream/movie/${imdbId}.json`;
-        //const url = `https://torrentio.strem.fun/providers=rarbg|qualityfilter=threed,4k,480p,unknown|limit=3/stream/movie/${imdbId}.json`;
-        const url = `https://oneplay.alwaysdata.net/stream/movie/${imdbId}.json`;
-        console.log(url);
-        return fetch(url)
-        .then(response => response.json()) // Converte a resposta para JSON
+    console.log(url);
+
+    // Requisição para obter os torrents
+    return fetch(url)
+        .then(response => response.json())
         .then(data => {
-            //return 'magnet:?xt=urn:btih:' + data.streams[data.streams.length - 1].infoHash; // Corrigido: concatenando a string corretamente
-            try {
-                return 'magnet:?xt=urn:btih:' + data.streams[0].infoHash; // Corrigido: concatenando a string corretamente
-            } catch (error) {
-                return 'magnet:?xt=urn:btih:' + data.streams[data.streams.length - 1].infoHash; // Corrigido: concatenando a string corretamente
+            if (data && data.streams && data.streams.length > 0) {
+                // Criação do modal de torrents
+                const torrentsContainer = $('#torrentModal');
+                const selectElement = $('#torrentSelect');
+                
+                // Limpa o conteúdo da seleção antes de adicionar novos
+                selectElement.empty();
+                selectElement.append('<option value="">Selecione um Torrent</option>'); // Opção padrão
+
+                // Adiciona o texto no topo do modal
+                // const textElement = $('<h3>Escolha o Torrent:</h3>');
+                // torrentsContainer.prepend(textElement); // Insere no topo da caixa do modal
+
+                // Adiciona as opções de torrents no select
+                data.streams.forEach(torrent => {
+                    const option = $('<option></option>')
+                        .attr('value', torrent.infoHash)
+                        .text(torrent.title);
+                    selectElement.append(option);
+                });
+
+                // Exibe o modal
+                torrentsContainer.show();
+
+                return new Promise((resolve, reject) => {
+                    // Quando o usuário selecionar um torrent, gerar o link magnético
+                    selectElement.on('change', function () {
+                        const selectedInfoHash = selectElement.val();
+                        if (selectedInfoHash) {
+                            const magnetLink = 'magnet:?xt=urn:btih:' + selectedInfoHash;
+                            console.log('Magnet Link:', magnetLink);
+                            $('#torrentModal').hide(); // Fecha o modal automaticamente após a seleção
+                            resolve(magnetLink); // Resolve o link magnético
+                        } else {
+                            reject('Nenhum torrent selecionado.');
+                        }
+                    });
+                });
+            } else {
+                console.log('Nenhum torrent encontrado.');
+                alert('Nenhum torrent encontrado.');
+                return null;
             }
         })
         .catch(error => {
-          console.error('Erro:', error);
-          return null; // Caso haja erro, retorna null
-        });         
-    }
+            console.error('Erro:', error);
+            return null; // Caso haja erro, retorna null
+        });
 }
+
+
+
+// Função para fechar o modal manualmente (caso o usuário queira fechar)
+$(document).ready(function () {
+    // Fecha o modal quando o botão de fechar for clicado
+    $('#closeModal').on('click', function () {
+        $('#torrentModal').hide();
+    });
+
+    // Fecha o modal quando clicar fora do modal
+    $(window).on('click', function (event) {
+        if ($(event.target).is('#torrentModal')) {
+            $('#torrentModal').hide();
+        }
+    });
+});
+
+
+// Função para desativar qualquer iframe com o nome 'webtor' ou qualquer iframe carregado
+function bloquearIframes() {
+    const iframes = document.querySelectorAll('iframe');
+    iframes.forEach(iframe => {
+        if (iframe.title === 'offer') {
+            iframe.style.display = 'none';
+            iframe.src = '';
+        }
+    });
+}
+
+// Executa ao carregar a página
+document.addEventListener('DOMContentLoaded', bloquearIframes);
+
+// Observa mudanças no DOM para capturar iframes adicionados dinamicamente
+const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+            if (node.tagName === 'IFRAME') {
+                // Verifica se o iframe não tem um atributo src ou se está vazio
+                if (!node.hasAttribute('src') || !node.src.trim()) {
+                    console.log('Iframe sem src detectado e removido:', node);
+                    node.remove();
+                }
+            }
+        });
+    });
+});
+observer.observe(document.body, { childList: true, subtree: true });
 
