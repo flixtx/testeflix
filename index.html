@@ -71,6 +71,10 @@
             text-align: center;
             padding: 15px;
             transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column; /* Força os elementos a ficarem em coluna */
+            align-items: center; /* Centraliza os elementos */
+            text-align: center;            
         }
 
         .item:hover {
@@ -80,6 +84,9 @@
         .item img {
             max-width: 100%;
             border-radius: 8px;
+            max-width: 100%;
+            border-radius: 8px;
+            display: block; /* Evita espaços extras */            
         }
 
         .item h3 {
@@ -97,6 +104,8 @@
             cursor: pointer;
             font-size: 14px;
             transition: background-color 0.3s ease;
+            width: 100%; /* Faz o botão ocupar toda a largura disponível */
+            margin-top: 10px; /* Adiciona um espaçamento entre a imagem e o botão */            
         }
 
         .item button:hover {
@@ -217,6 +226,63 @@
                 height: 100%;
             }
         }
+
+
+        
+
+        @media (max-width: 768px) {
+        #playerContainer {
+            width: 90%;
+            max-width: 100%;
+            max-height: 50vh; /* Define altura máxima como 50% da tela */
+        }
+        #player {
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        #playerContainer {
+            width: 95%;
+            max-width: 100%;
+            max-height: 40vh; /* Reduz ainda mais em telas menores */
+        }
+        #player {
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+
+    /* Ajusta o vídeo para caber no playerContainer */
+    #playerContainer video.player {
+        width: 100% !important;
+        height: auto !important;
+        max-height: 50vh; /* Limita a altura a 50% da altura da tela */
+        object-fit: contain; /* Mantém a proporção do vídeo */
+    }
+
+    /* Ajuste adicional para telas menores */
+    @media (max-width: 480px) {
+        #playerContainer video.player {
+            max-height: 40vh; /* Reduz ainda mais para celulares pequenos */
+        }
+    }
+
+    /* Ajuste para telas menores */
+    @media (max-width: 480px) {
+        .item {
+            width: 100%; /* Faz o item ocupar toda a largura */
+        }
+        
+        .item button {
+            width: 100%; /* Garante que o botão fique abaixo da imagem */
+        }
+    }    
+
+
+
     </style>
 </head>
 <body>
@@ -249,7 +315,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@webtor/embed-sdk-js/dist/index.min.js"></script>
     <script>
         // Abre o modal do player com o link magnético
-        function openModalWithPlayer(magnetLink) {
+        function openModalWithPlayer(magnetLink, imdb) {
             const modal = document.getElementById('playerModal');
             const playerDiv = document.getElementById('player');
 
@@ -270,7 +336,8 @@
                     }
                 },
                 poster: 'https://wallpapers.com/images/hd/overlapping-fine-neon-green-matrix-dvfxd08moa4d5hy8.jpg',
-                title: 'Reprodução de Torrent'
+                title: 'Reprodução de Torrent',
+                imdbId: imdb
             });
 
             // Mostra o modal

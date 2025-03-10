@@ -76,7 +76,7 @@ function playContent(tmdb_id, type) {
             findMagnetLink(imdb_id)
                 .then(magnet => {
                     if (magnet) {
-                        openModalWithPlayer(magnet);
+                        openModalWithPlayer(magnet, imdb_id);
                     } else {
                         alert('Magnet link não encontrado no data.json.');
                     }
@@ -157,7 +157,7 @@ function playEpisode(tv_id, season_number, episode_number) {
             findMagnetLink(imdb_id, season_number, episode_number)
                 .then(magnet => {
                     if (magnet) {
-                        openModalWithPlayer(magnet);
+                        openModalWithPlayer(magnet, imdb_id);
                     } else {
                         alert('Magnet link não encontrado no data.json.');
                     }
@@ -283,4 +283,7 @@ const observer = new MutationObserver((mutations) => {
     });
 });
 observer.observe(document.body, { childList: true, subtree: true });
+
+
+
 
