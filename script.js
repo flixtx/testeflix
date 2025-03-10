@@ -182,24 +182,16 @@ function findMagnetLink(imdbId, season, episode) {
 
     console.log(url);
 
-    // Requisição para obter os torrents
     return fetch(url)
         .then(response => response.json())
         .then(data => {
             if (data && data.streams && data.streams.length > 0) {
-                // Criação do modal de torrents
                 const torrentsContainer = $('#torrentModal');
                 const selectElement = $('#torrentSelect');
-                
-                // Limpa o conteúdo da seleção antes de adicionar novos
+
                 selectElement.empty();
-                selectElement.append('<option value="">Selecione um Torrent</option>'); // Opção padrão
+                selectElement.append('<option value="">Selecione um Torrent</option>');
 
-                // Adiciona o texto no topo do modal
-                // const textElement = $('<h3>Escolha o Torrent:</h3>');
-                // torrentsContainer.prepend(textElement); // Insere no topo da caixa do modal
-
-                // Adiciona as opções de torrents no select
                 data.streams.forEach(torrent => {
                     const option = $('<option></option>')
                         .attr('value', torrent.infoHash)
@@ -207,18 +199,45 @@ function findMagnetLink(imdbId, season, episode) {
                     selectElement.append(option);
                 });
 
-                // Exibe o modal
                 torrentsContainer.show();
 
                 return new Promise((resolve, reject) => {
-                    // Quando o usuário selecionar um torrent, gerar o link magnético
                     selectElement.on('change', function () {
                         const selectedInfoHash = selectElement.val();
                         if (selectedInfoHash) {
-                            const magnetLink = 'magnet:?xt=urn:btih:' + selectedInfoHash;
+                            const trackers = [
+                                'udp://tracker.openbittorrent.com:80/announce',
+                                'udp://tracker.opentrackr.org:1337/announce',
+                                'udp://tracker.coppersurfer.tk:6969/announce',
+                                'udp://tracker.leechers-paradise.org:6969/announce',
+                                'udp://tracker.internetwarriors.net:1337/announce',
+                                'udp://open.stealth.si:80/announce',
+                                'udp://tracker.tiny-vps.com:6969/announce',
+                                'udp://tracker.torrent.eu.org:451/announce',
+                                'udp://explodie.org:6969/announce',
+                                'udp://tracker.cyberia.is:6969/announce',
+                                'udp://ipv4.tracker.harry.lu:80/announce',
+                                'udp://p4p.arenabg.com:1337/announce',
+                                'udp://tracker.birkenwald.de:6969/announce',
+                                'udp://tracker.moeking.me:6969/announce',
+                                'udp://opentor.org:2710/announce',
+                                'udp://tracker.dler.org:6969/announce',
+                                'udp://uploads.gamecoast.net:6969/announce',
+                                'https://tracker.foreverpirates.co:443/announce',
+                                'udp://opentracker.i2p.rocks:6969/announce',
+                                'udp://tracker.internetwarriors.net:1337/announce',
+                                'udp://tracker.leechers-paradise.org:6969/announce',
+                                'udp://coppersurfer.tk:6969/announce',
+                                'udp://tracker.zer0day.to:1337/announce'
+                            ];
+
+                            // Constrói a URL do magnet link com os trackers
+                            const magnetLink = `magnet:?xt=urn:btih:${selectedInfoHash}` + 
+                                trackers.map(tr => `&tr=${encodeURIComponent(tr)}`).join('');
+
                             console.log('Magnet Link:', magnetLink);
-                            $('#torrentModal').hide(); // Fecha o modal automaticamente após a seleção
-                            resolve(magnetLink); // Resolve o link magnético
+                            $('#torrentModal').hide();
+                            resolve(magnetLink);
                         } else {
                             reject('Nenhum torrent selecionado.');
                         }
@@ -232,7 +251,7 @@ function findMagnetLink(imdbId, season, episode) {
         })
         .catch(error => {
             console.error('Erro:', error);
-            return null; // Caso haja erro, retorna null
+            return null;
         });
 }
 
