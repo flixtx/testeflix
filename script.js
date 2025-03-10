@@ -285,5 +285,28 @@ const observer = new MutationObserver((mutations) => {
 observer.observe(document.body, { childList: true, subtree: true });
 
 
+document.addEventListener("DOMContentLoaded", function () {
+    // Verifica o User-Agent
+    let userAgent = navigator.userAgent.toLowerCase();
+    
+    let isSmartTV = userAgent.includes("webos") || userAgent.includes("web0s") || userAgent.includes("tizen") || userAgent.includes("smart");
+
+    if (isSmartTV) {
+        function keepSelectsOpen() {
+            let selects = document.querySelectorAll("select");
+
+            selects.forEach(select => {
+                select.size = select.options.length; // Mantém todas as opções visíveis
+            });
+        }
+
+        // Executa ao carregar a página
+        keepSelectsOpen();
+
+        // Observa mudanças no DOM para detectar selects adicionados dinamicamente
+        const observer = new MutationObserver(keepSelectsOpen);
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+});
 
 
